@@ -1,0 +1,1678 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WG Mundo Ninja — Era da Fundação</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Inter:wght@300;400;500;600;700&family=Noto+Serif+JP:wght@600;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            cinzel: ['Cinzel', 'serif'],
+            kanji: ['Noto Serif JP', 'serif']
+          },
+          colors: {
+            ninja: {
+              950: '#07090e',
+              900: '#0d111a',
+              850: '#121824',
+              800: '#1a2332',
+              700: '#26344a',
+              gold: '#c99a45',
+              vermilion: '#d9432e',
+              leaf: '#2e8b57',
+              sand: '#d2b48c',
+              cloud: '#4682b4',
+              mist: '#5f9ea0',
+              frost: '#a0c4ff'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0d111a; }
+    ::-webkit-scrollbar-thumb { background: #26344a; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #c99a45; }
+    .gold-glow { text-shadow: 0 0 12px rgba(201, 154, 69, 0.4); }
+    .border-ninja { border-color: rgba(201, 154, 69, 0.25); }
+    .card-ninja { background: linear-gradient(145deg, #121824 0%, #0d111a 100%); border: 1px solid rgba(201, 154, 69, 0.18); }
+    .card-ninja-hover:hover { border-color: rgba(201, 154, 69, 0.5); transform: translateY(-1px); transition: all 0.2s ease; }
+  </style>
+</head>
+<body class="bg-ninja-950 text-gray-200 font-sans h-full flex flex-col selection:bg-ninja-gold selection:text-black">
+
+  <!-- TOP HEADER -->
+  <header class="bg-ninja-900 border-b border-ninja px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 sticky top-0 z-40 backdrop-blur-md bg-opacity-95">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-ninja-gold to-ninja-vermilion flex items-center justify-center font-kanji font-black text-xl text-black shadow-lg">
+        忍
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="font-cinzel font-bold text-lg text-amber-200 tracking-wider">WG MUNDO NINJA</h1>
+          <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono border border-amber-500/30">v1.0 (Netlify + Supabase)</span>
+        </div>
+        <p class="text-xs text-gray-400">Era da Fundação · Campanha Semanal (1 Semana = 1 Ano)</p>
+      </div>
+    </div>
+
+    <!-- Live Status & Village Selector -->
+    <div class="flex items-center gap-3">
+      <!-- Botão Mestre: Virada de Ano Automática -->
+      <button onclick="abrirModalViradaAno()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-500 hover:from-amber-500 hover:to-yellow-400 text-black font-extrabold text-xs shadow-md transition animate-pulse">
+        <span>⚙️</span>
+        <span>Processar Virada de Ano</span>
+      </button>
+
+      <!-- Backup Save/Load -->
+      <div class="hidden lg:flex items-center gap-1 bg-ninja-850 p-1 rounded-lg border border-gray-700">
+        <button onclick="exportarSaveJogo()" title="Baixar Save do Jogo" class="px-2 py-1 rounded hover:bg-ninja-800 text-xs text-gray-300 hover:text-amber-300">💾 Salvar</button>
+        <label title="Carregar Save do Jogo" class="px-2 py-1 rounded hover:bg-ninja-800 text-xs text-gray-300 hover:text-amber-300 cursor-pointer">
+          📂 Abrir
+          <input type="file" id="importSaveInput" onchange="importarSaveJogo(event)" class="hidden" accept=".json">
+        </label>
+      </div>
+
+      <!-- Seasonal Event Pill -->
+      <div class="hidden sm:flex items-center gap-2 bg-emerald-950/70 border border-emerald-500/30 px-3 py-1 rounded-full text-xs text-emerald-300">
+        <span class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+        </span>
+        <span class="font-semibold">Ano 3: Colheita da Primavera (+15%)</span>
+      </div>
+
+      <!-- Village Perspective Switcher -->
+      <div class="flex items-center gap-1.5 bg-ninja-850 px-2.5 py-1 rounded-lg border border-gray-700 text-xs">
+        <span class="text-gray-400">Visão:</span>
+        <select id="villageSelect" class="bg-transparent text-amber-300 font-semibold focus:outline-none cursor-pointer">
+          <option value="folha" class="bg-ninja-900">🍃 Folha (Raizen)</option>
+          <option value="areia" class="bg-ninja-900">⏳ Areia (Satori)</option>
+          <option value="nuvem" class="bg-ninja-900">⚡ Nuvem (Raiden)</option>
+          <option value="geada" class="bg-ninja-900">❄️ Geada (Dorutan)</option>
+          <option value="cachoeira" class="bg-ninja-900">🌊 Cachoeira (Tsuchinoko)</option>
+          <option value="mestre" class="bg-ninja-900">📜 Visão da Sol (Co-Mestre)</option>
+        </select>
+      </div>
+
+      <!-- Ambience Audio & Settings -->
+      <button id="audioToggleBtn" title="Ativar Trilha Sonora Ambiental" class="p-2 rounded-lg bg-ninja-850 border border-gray-700 hover:border-ninja-gold text-gray-300 hover:text-amber-300 text-xs flex items-center gap-1 transition">
+        <span id="audioIcon">🔇</span>
+        <span class="hidden md:inline" id="audioLabel">Trilha</span>
+      </button>
+
+      <button id="openSupabaseModalBtn" class="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-medium shadow-sm transition">
+        <span>⚡</span>
+        <span class="hidden md:inline">Supabase Nuvem</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN WRAPPER -->
+  <div class="flex-1 flex overflow-hidden">
+
+    <!-- SIDEBAR NAV -->
+    <nav class="w-64 bg-ninja-900 border-r border-ninja flex-shrink-0 flex flex-col justify-between hidden md:flex">
+      <div class="p-3 space-y-1">
+        <div class="text-[10px] font-semibold tracking-wider text-gray-500 uppercase px-3 py-1">Navegação Principal</div>
+
+        <button onclick="switchTab('mundo')" class="nav-tab active w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition text-left" data-tab="mundo">
+          <span class="text-lg">🟢</span>
+          <div>
+            <div class="text-white font-medium">Mundo Ninja</div>
+            <div class="text-[11px] text-gray-400">Crônicas do Ano 3 e regras</div>
+          </div>
+        </button>
+
+        <button onclick="switchTab('vila')" class="nav-tab w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition text-left text-gray-300 hover:bg-ninja-800" data-tab="vila">
+          <span class="text-lg">🏡</span>
+          <div>
+            <div class="text-white font-medium">Gestão da Vila</div>
+            <div class="text-[11px] text-gray-400">Economia, tropas e Kage</div>
+          </div>
+        </button>
+
+        <button onclick="switchTab('mapa')" class="nav-tab w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition text-left text-gray-300 hover:bg-ninja-800" data-tab="mapa">
+          <span class="text-lg">🗺️</span>
+          <div>
+            <div class="text-white font-medium">Mapa Político</div>
+            <div class="text-[11px] text-gray-400">Biomas e 5 Grandes Cortes</div>
+          </div>
+        </button>
+
+        <button onclick="switchTab('ordens')" class="nav-tab w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition text-left text-gray-300 hover:bg-ninja-800" data-tab="ordens">
+          <span class="text-lg">📜</span>
+          <div>
+            <div class="text-white font-medium">Ordens Secretas</div>
+            <div class="text-[11px] text-gray-400">Despacho anual para o Mestre</div>
+          </div>
+        </button>
+
+        <button onclick="switchTab('missoes')" class="nav-tab w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition text-left text-gray-300 hover:bg-ninja-800" data-tab="missoes">
+          <span class="text-lg">⛩️</span>
+          <div>
+            <div class="text-white font-medium">Mural das Cortes</div>
+            <div class="text-[11px] text-gray-400">Contratos Feudais e Daimyōs</div>
+          </div>
+        </button>
+
+        <button onclick="switchTab('deploy')" class="nav-tab w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition text-left text-gray-300 hover:bg-ninja-800" data-tab="deploy">
+          <span class="text-lg">🚀</span>
+          <div>
+            <div class="text-white font-medium">GitHub & Netlify</div>
+            <div class="text-[11px] text-gray-400">Arquivos e publicação grátis</div>
+          </div>
+        </button>
+      </div>
+
+      <!-- Fundadores Ativos Card -->
+      <div class="p-3 border-t border-gray-800 bg-ninja-950/60">
+        <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Fundadores Ativos (Ano 3)</div>
+        <div class="space-y-1.5 text-xs">
+          <div class="flex items-center justify-between text-gray-300">
+            <span>🍃 Raizen (Folha)</span>
+            <span class="text-[10px] text-emerald-400">Operacional</span>
+          </div>
+          <div class="flex items-center justify-between text-gray-300">
+            <span>⏳ Satori (Areia)</span>
+            <span class="text-[10px] text-emerald-400">Operacional</span>
+          </div>
+          <div class="flex items-center justify-between text-gray-300">
+            <span>⚡ Raiden (Nuvem)</span>
+            <span class="text-[10px] text-emerald-400">Operacional</span>
+          </div>
+          <div class="flex items-center justify-between text-gray-300">
+            <span>❄️ Dorutan (Geada)</span>
+            <span class="text-[10px] text-emerald-400">Operacional</span>
+          </div>
+          <div class="flex items-center justify-between text-gray-300">
+            <span>🌊 Tsuchinoko (Cachoeira)</span>
+            <span class="text-[10px] text-emerald-400">Operacional</span>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- CONTENT VIEWS CONTAINER -->
+    <main class="flex-1 overflow-y-auto bg-ninja-950 p-4 md:p-6 space-y-6">
+
+      <!-- ================= TAB: MUNDO ================= -->
+      <section id="tab-mundo" class="tab-content space-y-6">
+        <!-- Hero Banner -->
+        <div class="relative rounded-2xl overflow-hidden border border-ninja shadow-2xl bg-ninja-900 min-h-[220px] flex items-end">
+          <img src="user_uploaded_files/ttl=63d/tool_generated/watermarked_img_18176476860190742935.jpg" alt="Era da Fundação" class="absolute inset-0 w-full h-full object-cover opacity-60">
+          <div class="absolute inset-0 bg-gradient-to-t from-ninja-950 via-ninja-950/70 to-transparent"></div>
+          <div class="relative p-6 max-w-3xl space-y-2">
+            <span class="inline-block px-3 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-xs font-mono border border-amber-500/40">ERA DA FUNDAÇÃO · ANO 3</span>
+            <h2 class="text-3xl md:text-4xl font-cinzel font-black text-amber-100 tracking-wide gold-glow">O Despertar das Vilas Ocultas</h2>
+            <p class="text-sm text-gray-300 leading-relaxed">
+              Os clãs saem das sombras das florestas e desfiladeiros. Com o apoio das Cinco Cortes Feudais, as primeiras vilas delimitam suas fronteiras no mundo shinobi. O tempo corre em semanas reais: cada semana representa um ano inteiro de decisões, colheitas e guerra velada.
+            </p>
+          </div>
+        </div>
+
+        <!-- Evento Ativo e Contador de Virada -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="card-ninja p-4 rounded-xl flex items-center gap-4">
+            <div class="w-12 h-12 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-2xl">🌱</div>
+            <div>
+              <div class="text-xs text-gray-400">Estação Ativa</div>
+              <div class="text-base font-bold text-emerald-400">Colheita da Primavera</div>
+              <div class="text-xs text-gray-400">+15% Comida em fazendas e pesqueiros</div>
+            </div>
+          </div>
+          <div class="card-ninja p-4 rounded-xl flex items-center gap-4">
+            <div class="w-12 h-12 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-2xl">⏳</div>
+            <div>
+              <div class="text-xs text-gray-400">Próxima Virada de Ano</div>
+              <div class="text-base font-bold text-amber-300">Ano 4 em 3 dias</div>
+              <div class="text-xs text-gray-400">Mestre fechando ordens pendentes</div>
+            </div>
+          </div>
+          <div class="card-ninja p-4 rounded-xl flex items-center gap-4">
+            <div class="w-12 h-12 rounded-lg bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-2xl">⚔️</div>
+            <div>
+              <div class="text-xs text-gray-400">Equilíbrio Militar</div>
+              <div class="text-base font-bold text-blue-300">Paz Armada Instável</div>
+              <div class="text-xs text-gray-400">Missões de escolta e patrulhas ativas</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Guia "Como Jogar" (Expandível) -->
+        <div class="card-ninja rounded-xl overflow-hidden border border-ninja">
+          <button onclick="toggleCollapse('guiaCorpo')" class="w-full px-5 py-3.5 flex items-center justify-between bg-ninja-850 hover:bg-ninja-800 text-left transition">
+            <div class="flex items-center gap-3">
+              <span class="text-lg">📜</span>
+              <div>
+                <span class="font-cinzel font-bold text-amber-200">Guia de Sobrevivência & Como Jogar</span>
+                <span class="text-xs text-gray-400 ml-2">(Diretrizes da Era da Fundação)</span>
+              </div>
+            </div>
+            <span id="guiaCorpoIcon" class="text-gray-400">▼</span>
+          </button>
+          <div id="guiaCorpo" class="p-5 space-y-4 text-xs text-gray-300 border-t border-gray-800 bg-ninja-900/50">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div class="p-3 bg-ninja-950 rounded-lg border border-gray-800">
+                <div class="font-bold text-amber-300 mb-1">1. Escolha seu Lugar</div>
+                <p>Explore o mapa político, conheça os biomas e veja as vantagens e carências da região escolhida.</p>
+              </div>
+              <div class="p-3 bg-ninja-950 rounded-lg border border-gray-800">
+                <div class="font-bold text-amber-300 mb-1">2. Receba sua Vila</div>
+                <p>Após aprovação do Mestre, você ganha acesso aos estoques iniciais, população e esquadrões.</p>
+              </div>
+              <div class="p-3 bg-ninja-950 rounded-lg border border-gray-800">
+                <div class="font-bold text-amber-300 mb-1">3. Planeje o Crescimento</div>
+                <p>Construa fazendas e minas, avance 1 pesquisa por ano e distribua ninjas em patrulhas e missões.</p>
+              </div>
+              <div class="p-3 bg-ninja-950 rounded-lg border border-gray-800">
+                <div class="font-bold text-amber-300 mb-1">4. Envie Ordens Secretas</div>
+                <p>Ao fim da semana, envie suas ordens ao Mestre e acompanhe os desdobramentos nas Crônicas do Mundo.</p>
+              </div>
+            </div>
+            <div class="p-3 bg-amber-950/20 border border-amber-500/20 rounded-lg text-amber-200/90 leading-relaxed">
+              <strong>Regra de Ouro da Sol (Filtro das 5 Perguntas para Jutsus):</strong> Qualquer técnica criada pelo jogador deve responder: <em>1) O que faz? 2) Como funciona? (alcance/duração) 3) Quanto custa em chakra e itens? 4) O que a impede/anula? 5) Como evolui?</em> Pertencer a clãs nobres (ex: Senju) não concede Kekkei Genkai de graça sem compra e treino na ficha!
+            </div>
+          </div>
+        </div>
+
+        <!-- Crônicas do Mundo (Timeline Narrativa) -->
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="font-cinzel font-bold text-xl text-amber-200 flex items-center gap-2">
+              <span>📖</span> Crônicas do Mundo (Ano 3)
+            </h3>
+            <button onclick="abrirModalNovaCronica()" class="px-3 py-1.5 rounded-lg bg-ninja-gold/20 hover:bg-ninja-gold/30 text-amber-300 border border-ninja-gold/40 text-xs font-semibold flex items-center gap-1 transition">
+              <span>+</span> Adicionar Crônica (Mestre)
+            </button>
+          </div>
+
+          <div id="cronicasContainer" class="space-y-4">
+            <!-- Crônica 1 -->
+            <article class="card-ninja p-5 rounded-xl border border-ninja space-y-3">
+              <div class="flex flex-wrap items-center justify-between gap-2 border-b border-gray-800 pb-2.5">
+                <div class="flex items-center gap-2">
+                  <span class="px-2.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono text-xs font-bold">Capítulo 1 · Ano 3</span>
+                  <h4 class="font-bold text-white text-base">A Reunião do Cedro Rubro e as Caravanas de Fogo</h4>
+                </div>
+                <div class="flex items-center gap-2 text-xs">
+                  <span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-500/30">Todas as vilas podem agir</span>
+                  <span class="text-gray-400">Virada de Ano 3</span>
+                </div>
+              </div>
+              <p class="text-sm text-gray-300 leading-relaxed">
+                Com o início da primavera, o Daimyō Masanori Akitsu abriu os celeiros do Palácio do Cedro Rubro. No entanto, bandos de ronin remanescentes das guerras de clãs ameaçam as rotas de grãos que abastecem Konoha. Mais a oeste, emissários de Suna foram vistos negociando estoques de ferro nos limites do País dos Rios. O Kage Raizen ordenou a fortificação das pontes de madeira com reforços de Doton.
+              </p>
+              <div class="flex items-center justify-between pt-2">
+                <div class="flex items-center gap-1.5 text-xs">
+                  <button onclick="adicionarReacao(this, 'fogo')" class="px-2.5 py-1 rounded-lg bg-ninja-850 hover:bg-ninja-800 border border-gray-800 flex items-center gap-1 transition">🔥 <span class="reacao-count">5</span></button>
+                  <button onclick="adicionarReacao(this, 'espada')" class="px-2.5 py-1 rounded-lg bg-ninja-850 hover:bg-ninja-800 border border-gray-800 flex items-center gap-1 transition">⚔️ <span class="reacao-count">8</span></button>
+                  <button onclick="adicionarReacao(this, 'olho')" class="px-2.5 py-1 rounded-lg bg-ninja-850 hover:bg-ninja-800 border border-gray-800 flex items-center gap-1 transition">👀 <span class="reacao-count">3</span></button>
+                  <button onclick="adicionarReacao(this, 'palmas')" class="px-2.5 py-1 rounded-lg bg-ninja-850 hover:bg-ninja-800 border border-gray-800 flex items-center gap-1 transition">👏 <span class="reacao-count">4</span></button>
+                </div>
+                <span class="text-[11px] text-gray-500 italic">Registrado pela Sol (Co-Mestre)</span>
+              </div>
+            </article>
+
+            <!-- Crônica 2 -->
+            <article class="card-ninja p-5 rounded-xl border border-ninja space-y-3">
+              <div class="flex flex-wrap items-center justify-between gap-2 border-b border-gray-800 pb-2.5">
+                <div class="flex items-center gap-2">
+                  <span class="px-2.5 py-0.5 rounded bg-blue-500/20 text-blue-300 font-mono text-xs font-bold">Capítulo 2 · Ano 2</span>
+                  <h4 class="font-bold text-white text-base">O Voo dos Kikaichū e as Tempestades do Vento</h4>
+                </div>
+                <div class="flex items-center gap-2 text-xs">
+                  <span class="px-2 py-0.5 rounded bg-gray-800 text-gray-300">Arquivo Histórico</span>
+                </div>
+              </div>
+              <p class="text-sm text-gray-300 leading-relaxed">
+                As patrulhas do clã Aburame sob comando de Raiden identificaram movimentações de tropas não identificadas nos desfiladeiros de Kumogakure. Em Suna, o mestre marionetista Satori concluiu a adaptação de novos mecanismos com lâminas ocultas para enfrentar os bandos saqueadores do deserto.
+              </p>
+              <div class="flex items-center justify-between pt-2">
+                <div class="flex items-center gap-1.5 text-xs">
+                  <button onclick="adicionarReacao(this, 'fogo')" class="px-2.5 py-1 rounded-lg bg-ninja-850 hover:bg-ninja-800 border border-gray-800 flex items-center gap-1 transition">🔥 <span class="reacao-count">3</span></button>
+                  <button onclick="adicionarReacao(this, 'espada')" class="px-2.5 py-1 rounded-lg bg-ninja-850 hover:bg-ninja-800 border border-gray-800 flex items-center gap-1 transition">⚔️ <span class="reacao-count">4</span></button>
+                </div>
+                <span class="text-[11px] text-gray-500 italic">Registrado pela Sol (Co-Mestre)</span>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB: VILA & KAGE ================= -->
+      <section id="tab-vila" class="tab-content hidden space-y-6">
+        <!-- Village Header Card -->
+        <div class="card-ninja p-6 rounded-2xl border border-ninja flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <span id="vilaEmblema" class="text-3xl">🍃</span>
+              <div>
+                <h2 id="vilaNome" class="text-2xl font-cinzel font-bold text-amber-200">Konohagakure (Vila da Folha)</h2>
+                <p id="vilaSubtitulo" class="text-xs text-gray-400">País do Fogo · Florestas Ancestrais · Daimyō Masanori Akitsu</p>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <button onclick="simularColheitaPrimavera()" class="px-3.5 py-2 rounded-lg bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 border border-emerald-500/50 text-xs font-semibold flex items-center gap-2 transition">
+              <span>🌾</span>
+              <span>Calcular Colheita Primavera (+15%)</span>
+            </button>
+            <button onclick="abrirModalEdicaoRecursos()" class="px-3 py-2 rounded-lg bg-ninja-850 hover:bg-ninja-800 text-gray-300 border border-gray-700 text-xs font-medium transition">
+              ✏️ Ajustar Cofre
+            </button>
+          </div>
+        </div>
+
+        <!-- Recursos da Vila (Cofre & MDO) -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+          <div class="card-ninja p-3 rounded-xl border border-ninja">
+            <div class="text-[11px] text-gray-400 flex items-center justify-between">
+              <span>Ryō (Ouro)</span> <span>💰</span>
+            </div>
+            <div id="valRyo" class="text-xl font-bold text-amber-300 mt-1">3.500</div>
+            <div class="text-[10px] text-emerald-400 mt-0.5">+450 / ano</div>
+          </div>
+
+          <div class="card-ninja p-3 rounded-xl border border-ninja">
+            <div class="text-[11px] text-gray-400 flex items-center justify-between">
+              <span>Comida</span> <span>🌾</span>
+            </div>
+            <div id="valComida" class="text-xl font-bold text-emerald-300 mt-1">3.200</div>
+            <div class="text-[10px] text-emerald-400 mt-0.5">+15% Ativo</div>
+          </div>
+
+          <div class="card-ninja p-3 rounded-xl border border-ninja">
+            <div class="text-[11px] text-gray-400 flex items-center justify-between">
+              <span>Madeira</span> <span>🪵</span>
+            </div>
+            <div id="valMadeira" class="text-xl font-bold text-amber-200 mt-1">2.400</div>
+            <div class="text-[10px] text-emerald-400 mt-0.5">+25% Bioma</div>
+          </div>
+
+          <div class="card-ninja p-3 rounded-xl border border-ninja">
+            <div class="text-[11px] text-gray-400 flex items-center justify-between">
+              <span>Pedra</span> <span>🪨</span>
+            </div>
+            <div id="valPedra" class="text-xl font-bold text-gray-300 mt-1">700</div>
+            <div class="text-[10px] text-red-400 mt-0.5">-25% Bioma</div>
+          </div>
+
+          <div class="card-ninja p-3 rounded-xl border border-ninja">
+            <div class="text-[11px] text-gray-400 flex items-center justify-between">
+              <span>Ferro</span> <span>⛓️</span>
+            </div>
+            <div id="valFerro" class="text-xl font-bold text-blue-300 mt-1">900</div>
+            <div class="text-[10px] text-gray-400 mt-0.5">Estável</div>
+          </div>
+
+          <div class="card-ninja p-3 rounded-xl border border-ninja">
+            <div class="text-[11px] text-gray-400 flex items-center justify-between">
+              <span>Mão de Obra</span> <span>👥</span>
+            </div>
+            <div id="valMdo" class="text-xl font-bold text-purple-300 mt-1">8 / 8</div>
+            <div class="text-[10px] text-gray-400 mt-0.5">Pontos p/ Ação</div>
+          </div>
+
+          <div class="card-ninja p-3 rounded-xl border border-ninja">
+            <div class="text-[11px] text-gray-400 flex items-center justify-between">
+              <span>População</span> <span>🏘️</span>
+            </div>
+            <div id="valPop" class="text-xl font-bold text-amber-100 mt-1">8.500</div>
+            <div class="text-[10px] text-emerald-400 mt-0.5">+300 / ano</div>
+          </div>
+        </div>
+
+        <!-- Kage Card & Ficha Tripartite -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Coluna 1: Perfil do Kage -->
+          <div class="card-ninja p-5 rounded-2xl border border-ninja space-y-4">
+            <div class="flex items-center gap-3">
+              <div id="kageAvatar" class="w-14 h-14 rounded-full bg-gradient-to-tr from-amber-600 to-amber-300 flex items-center justify-center text-2xl font-bold text-black border-2 border-ninja-gold">
+                R
+              </div>
+              <div>
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 uppercase">Líder Fundador</span>
+                <h3 id="kageNome" class="text-lg font-bold text-white">Raizen</h3>
+                <p id="kageCla" class="text-xs text-amber-200">Clã Senju · Foco Doton</p>
+              </div>
+            </div>
+
+            <!-- Chakra Bar -->
+            <div class="space-y-1">
+              <div class="flex justify-between text-xs">
+                <span class="text-blue-300 font-semibold">Reserva de Chakra</span>
+                <span id="chakraLabel" class="text-blue-200 font-mono">100 / 100</span>
+              </div>
+              <div class="w-full bg-ninja-950 rounded-full h-2.5 overflow-hidden border border-blue-900">
+                <div id="chakraBar" class="bg-gradient-to-r from-blue-600 to-cyan-400 h-2.5 rounded-full" style="width: 100%"></div>
+              </div>
+            </div>
+
+            <div class="space-y-2 text-xs border-t border-gray-800 pt-3">
+              <div class="text-gray-400">Especialidade Declarada:</div>
+              <p id="kageEspecialidade" class="text-gray-200 p-2.5 bg-ninja-950 rounded-lg border border-gray-800 leading-relaxed">
+                Mestre em Liberação de Terra (Doton) e fortificações em larga escala. Robustez física e combate corpo a corpo tático. Sem Mokuton ativo no T3.
+              </p>
+            </div>
+
+            <div class="p-3 bg-blue-950/20 border border-blue-500/20 rounded-lg text-xs text-blue-300">
+              <strong>Status Físico:</strong> <span id="kageStatus">Operacional e descansado.</span>
+            </div>
+          </div>
+
+          <!-- Coluna 2 e 3: A Ficha Tripartite Padronizada -->
+          <div class="lg:col-span-2 card-ninja p-5 rounded-2xl border border-ninja space-y-4">
+            <h3 class="font-cinzel font-bold text-base text-amber-200 flex items-center gap-2">
+              <span>📋</span> Ficha Tripartite de Campanha
+            </h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+              <!-- Camada 1: O Que Possui -->
+              <div class="p-3.5 bg-ninja-950 rounded-xl border border-gray-800 space-y-2">
+                <div class="font-bold text-amber-300 flex items-center gap-1.5 border-b border-gray-800 pb-1.5">
+                  <span>🏛️</span> 1. O que Possui
+                </div>
+                <ul id="listaPossui" class="space-y-1.5 text-gray-300">
+                  <li>• 1x Mina de Ouro (Ativa no T2)</li>
+                  <li>• 2x Fazendas Fluviais</li>
+                  <li>• 1x Sede de Alojamentos</li>
+                  <li>• 1x Oficina de Ferreiros</li>
+                </ul>
+              </div>
+
+              <!-- Camada 2: O Que Conhece -->
+              <div class="p-3.5 bg-ninja-950 rounded-xl border border-gray-800 space-y-2">
+                <div class="font-bold text-amber-300 flex items-center gap-1.5 border-b border-gray-800 pb-1.5">
+                  <span>🧠</span> 2. O que Conhece
+                </div>
+                <ul id="listaConhece" class="space-y-1.5 text-gray-300">
+                  <li>• Doton: Muralha de Lama (25 ch.)</li>
+                  <li>• Doton: Lança de Rocha (20 ch.)</li>
+                  <li>• Tática de Fortificação Fluvial</li>
+                  <li>• Arquitetura Militar Básica</li>
+                </ul>
+              </div>
+
+              <!-- Camada 3: Preparado na Bolsa -->
+              <div class="p-3.5 bg-ninja-950 rounded-xl border border-gray-800 space-y-2">
+                <div class="font-bold text-amber-300 flex items-center gap-1.5 border-b border-gray-800 pb-1.5">
+                  <span>🎒</span> 3. Na Bolsa / Missão
+                </div>
+                <ul id="listaBolsa" class="space-y-1.5 text-gray-300">
+                  <li>• 12x Kunais com Tarja Explosiva</li>
+                  <li>• 20x Shurikens de Aço</li>
+                  <li>• 2x Pergaminhos de Terra</li>
+                  <li>• 3x Pílulas de Soldado</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Pesquisa Anual Ativa -->
+            <div class="p-4 bg-ninja-850 rounded-xl border border-gray-800 space-y-2">
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-amber-300 font-bold flex items-center gap-1.5">
+                  <span>🔬</span> Pesquisa Tecnológica Ativa (Ano 3 - Limite de 1/ano)
+                </span>
+                <span class="text-emerald-400 font-mono">Em Andamento (75%)</span>
+              </div>
+              <div class="text-xs text-gray-300 font-semibold" id="pesquisaNome">Serraria Hidráulica & Fortificação de Madeira</div>
+              <div class="w-full bg-ninja-950 rounded-full h-2 overflow-hidden border border-gray-700">
+                <div class="bg-gradient-to-r from-amber-500 to-emerald-400 h-2 rounded-full" style="width: 75%"></div>
+              </div>
+              <p class="text-[11px] text-gray-400">Reduzirá custo de madeira para defesas e pontes no Ano 4.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gestão de Esquadrões Militares -->
+        <div class="space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h3 class="font-cinzel font-bold text-xl text-amber-200 flex items-center gap-2">
+              <span>🥷</span> Esquadrões & Força Militar
+            </h3>
+            <button onclick="abrirModalNovoEsquadrao()" class="px-3 py-1.5 rounded-lg bg-ninja-gold/20 hover:bg-ninja-gold/30 text-amber-300 border border-ninja-gold/40 text-xs font-semibold flex items-center gap-1 transition">
+              <span>+</span> Recrutar Esquadrão
+            </button>
+          </div>
+
+          <div id="esquadroesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Esquadrão 1 -->
+            <div class="card-ninja p-4 rounded-xl border border-ninja space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px] font-bold">1º Pelotão · Genin</span>
+                <span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-500/30 text-[10px]">Disponível</span>
+              </div>
+              <div>
+                <div class="font-bold text-white text-sm">Esquadrão Águia da Folha</div>
+                <div class="text-xs text-gray-400">4 ninjas · Patrulha Interna</div>
+              </div>
+              <div class="text-[11px] text-gray-300 bg-ninja-950 p-2 rounded border border-gray-800">
+                Equipamento: Kunais, tarjas e fios de aço.
+              </div>
+              <div class="flex items-center gap-2 pt-1">
+                <button onclick="alterarStatusEsquadrao(this)" class="w-full py-1 rounded bg-ninja-850 hover:bg-ninja-800 text-gray-300 border border-gray-700 text-xs transition">
+                  Mudar Status
+                </button>
+              </div>
+            </div>
+
+            <!-- Esquadrão 2 -->
+            <div class="card-ninja p-4 rounded-xl border border-ninja space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 text-[10px] font-bold">2º Pelotão · Chunin</span>
+                <span class="px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-500/30 text-[10px]">Em Missão</span>
+              </div>
+              <div>
+                <div class="font-bold text-white text-sm">Sentinelas da Fronteira</div>
+                <div class="text-xs text-gray-400">4 ninjas · Fronteira do Rio</div>
+              </div>
+              <div class="text-[11px] text-gray-300 bg-ninja-950 p-2 rounded border border-gray-800">
+                Missão: Escolta de Caravana de Grãos (Rank C).
+              </div>
+              <div class="flex items-center gap-2 pt-1">
+                <button onclick="alterarStatusEsquadrao(this)" class="w-full py-1 rounded bg-ninja-850 hover:bg-ninja-800 text-gray-300 border border-gray-700 text-xs transition">
+                  Mudar Status
+                </button>
+              </div>
+            </div>
+
+            <!-- Esquadrão 3 -->
+            <div class="card-ninja p-4 rounded-xl border border-ninja space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 text-[10px] font-bold">Guarda do Kage · Jonin</span>
+                <span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-500/30 text-[10px]">Apto</span>
+              </div>
+              <div>
+                <div class="font-bold text-white text-sm">Guarda dos Pilares de Pedra</div>
+                <div class="text-xs text-gray-400">2 Jonin Especialistas em Doton</div>
+              </div>
+              <div class="text-[11px] text-gray-300 bg-ninja-950 p-2 rounded border border-gray-800">
+                Proteção pessoal e defesa central do cofre.
+              </div>
+              <div class="flex items-center gap-2 pt-1">
+                <button onclick="alterarStatusEsquadrao(this)" class="w-full py-1 rounded bg-ninja-850 hover:bg-ninja-800 text-gray-300 border border-gray-700 text-xs transition">
+                  Mudar Status
+                </button>
+              </div>
+            </div>
+
+            <!-- Esquadrão 4 -->
+            <div class="card-ninja p-4 rounded-xl border border-ninja space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="px-2 py-0.5 rounded bg-gray-700 text-gray-300 text-[10px] font-bold">Reserva · Genin</span>
+                <span class="px-2 py-0.5 rounded bg-red-950 text-red-300 border border-red-500/30 text-[10px]">Ferido (Hospital)</span>
+              </div>
+              <div>
+                <div class="font-bold text-white text-sm">Esquadrão Coruja Noturna</div>
+                <div class="text-xs text-gray-400">3 ninjas · Em recuperação</div>
+              </div>
+              <div class="text-[11px] text-gray-300 bg-ninja-950 p-2 rounded border border-gray-800">
+                Feridos em emboscada ronin no Vale Ocidental.
+              </div>
+              <div class="flex items-center gap-2 pt-1">
+                <button onclick="alterarStatusEsquadrao(this)" class="w-full py-1 rounded bg-ninja-850 hover:bg-ninja-800 text-gray-300 border border-gray-700 text-xs transition">
+                  Mudar Status
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB: MAPA POLÍTICO ================= -->
+      <section id="tab-mapa" class="tab-content hidden space-y-6">
+        <div class="card-ninja p-6 rounded-2xl border border-ninja space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 class="text-2xl font-cinzel font-bold text-amber-200">Mapa Político da Era da Fundação</h2>
+              <p class="text-xs text-gray-400">Clique nas regiões para inspecionar os biomas, Daimyōs e bônus da terra.</p>
+            </div>
+            <div class="flex items-center gap-2 text-xs">
+              <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-red-600 inline-block"></span> Fogo</span>
+              <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-amber-500 inline-block"></span> Vento</span>
+              <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-blue-600 inline-block"></span> Raio</span>
+              <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-cyan-500 inline-block"></span> Água</span>
+              <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-emerald-600 inline-block"></span> Terra</span>
+            </div>
+          </div>
+
+          <!-- Interactive SVG Map -->
+          <div class="relative bg-ninja-950 rounded-xl border border-gray-800 p-4 overflow-hidden flex items-center justify-center">
+            <svg viewBox="0 0 800 480" class="w-full h-auto max-h-[460px] select-none">
+              <!-- Water Background -->
+              <rect width="800" height="480" fill="#0b1320" />
+              
+              <!-- Continente e Regiões -->
+              <!-- País do Vento (Areia) -->
+              <polygon points="50,150 250,120 280,320 180,420 40,380" fill="#2d2416" stroke="#c99a45" stroke-width="2" class="cursor-pointer hover:fill-[#3d311e] transition" onclick="selecionarRegiaoMapa('vento')" />
+              <text x="130" y="260" fill="#d2b48c" font-size="16" font-family="Cinzel" font-weight="bold">PAÍS DO VENTO</text>
+              <text x="145" y="285" fill="#c99a45" font-size="12">⏳ Suna (Satori)</text>
+
+              <!-- País do Fogo (Folha) -->
+              <polygon points="250,120 480,100 520,290 380,390 280,320" fill="#301515" stroke="#d9432e" stroke-width="2" class="cursor-pointer hover:fill-[#421c1c] transition" onclick="selecionarRegiaoMapa('fogo')" />
+              <text x="350" y="210" fill="#fca5a5" font-size="16" font-family="Cinzel" font-weight="bold">PAÍS DO FOGO</text>
+              <text x="360" y="235" fill="#f87171" font-size="12">🍃 Konoha (Raizen)</text>
+
+              <!-- País do Raio (Nuvem) -->
+              <polygon points="480,100 700,50 760,180 570,220 520,150" fill="#18233c" stroke="#4682b4" stroke-width="2" class="cursor-pointer hover:fill-[#203052] transition" onclick="selecionarRegiaoMapa('raio')" />
+              <text x="580" y="130" fill="#93c5fd" font-size="15" font-family="Cinzel" font-weight="bold">PAÍS DO RAIO</text>
+              <text x="600" y="155" fill="#60a5fa" font-size="12">⚡ Kumo (Raiden)</text>
+
+              <!-- País da Terra (Pedra) -->
+              <polygon points="200,30 450,20 480,100 250,120" fill="#1b2e1f" stroke="#2e8b57" stroke-width="2" class="cursor-pointer hover:fill-[#243d2a] transition" onclick="selecionarRegiaoMapa('terra')" />
+              <text x="290" y="70" fill="#86efac" font-size="14" font-family="Cinzel" font-weight="bold">PAÍS DA TERRA</text>
+
+              <!-- Países Menores (Tampão Central: Chuva, Cachoeira, Grama, Geada) -->
+              <circle cx="280" cy="180" r="28" fill="#1c2833" stroke="#5dade2" stroke-width="1.5" class="cursor-pointer hover:fill-[#273746]" onclick="selecionarRegiaoMapa('geada')" />
+              <text x="262" y="184" fill="#a0c4ff" font-size="10" font-weight="bold">❄️ Geada</text>
+
+              <circle cx="340" cy="300" r="26" fill="#152b2b" stroke="#48c9b0" stroke-width="1.5" class="cursor-pointer hover:fill-[#1b3d3d]" onclick="selecionarRegiaoMapa('cachoeira')" />
+              <text x="318" y="304" fill="#a3e4d7" font-size="9" font-weight="bold">🌊 Cachoeira</text>
+
+              <circle cx="270" cy="270" r="24" fill="#212f3d" stroke="#85929e" stroke-width="1.5" class="cursor-pointer hover:fill-[#2c3e50]" onclick="selecionarRegiaoMapa('chuva')" />
+              <text x="252" y="274" fill="#d5d8dc" font-size="10">🌧️ Chuva</text>
+
+              <!-- País da Água (Névoa - Ilhas Orientais) -->
+              <path d="M 640,270 Q 720,250 760,330 T 670,410 Z" fill="#132338" stroke="#5f9ea0" stroke-width="2" class="cursor-pointer hover:fill-[#1b334f]" onclick="selecionarRegiaoMapa('agua')" />
+              <text x="670" y="340" fill="#a5f3fc" font-size="14" font-family="Cinzel" font-weight="bold">ÁGUA</text>
+              <text x="670" y="360" fill="#67e8f9" font-size="11">🌫️ Kiri</text>
+            </svg>
+          </div>
+
+          <!-- Painel de Detalhes da Região Selecionada -->
+          <div id="detalhesRegiaoCard" class="p-4 bg-ninja-900 rounded-xl border border-ninja grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <div class="text-xs text-gray-400">Região Selecionada</div>
+              <h4 id="mapaRegiaoNome" class="text-lg font-bold text-amber-300">País do Fogo (Konohagakure)</h4>
+              <p id="mapaDaimyo" class="text-xs text-gray-300 mt-0.5">Soberano Feudal: Daimyō Masanori Akitsu</p>
+            </div>
+            <div>
+              <div class="text-xs text-gray-400">Bônus da Terra</div>
+              <p id="mapaBonus" class="text-xs text-emerald-400 font-semibold mt-1">+25% Comida, +25% Madeira</p>
+              <div class="text-xs text-gray-400 mt-2">Penalidade Natural</div>
+              <p id="mapaPenalidade" class="text-xs text-red-400 font-semibold">-25% Produção de Pedra</p>
+            </div>
+            <div>
+              <div class="text-xs text-gray-400">Palácio Feudal & Centro Nobre</div>
+              <p id="mapaPalacio" class="text-xs text-amber-200 font-medium mt-1">Palácio do Cedro Rubro</p>
+              <p class="text-[11px] text-gray-400 mt-1">Ponto de entrega de contratos e tributos das Cinco Cortes.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB: ORDENS SECRETAS ================= -->
+      <section id="tab-ordens" class="tab-content hidden space-y-6">
+        <div class="card-ninja p-6 rounded-2xl border border-ninja space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-gray-800 pb-3">
+            <div>
+              <h2 class="text-2xl font-cinzel font-bold text-amber-200">Despacho de Ordens Secretas (Ano 3)</h2>
+              <p class="text-xs text-gray-400">Preencha suas diretrizes de comando anual. As ordens serão enviadas para avaliação da Sol (Co-Mestre).</p>
+            </div>
+            <div class="text-xs px-3 py-1 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+              Prazo: Fim da Semana Real
+            </div>
+          </div>
+
+          <form id="ordensForm" onsubmit="submeterOrdens(event)" class="space-y-4 text-xs">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Ordens Econômicas -->
+              <div class="space-y-1.5">
+                <label class="block font-semibold text-amber-300 flex items-center gap-1.5">
+                  <span>🌾</span> Diretrizes Econômicas & Infraestrutura
+                </label>
+                <textarea id="ordemEconomica" rows="4" class="w-full p-3 bg-ninja-950 rounded-xl border border-gray-800 text-gray-200 focus:border-ninja-gold focus:outline-none" placeholder="Ex: Construir 1x Fazenda Fluvial adicional para aproveitar o bônus de 15% da Primavera. Alocar 3 pontos de MDO."></textarea>
+              </div>
+
+              <!-- Ordens Militares -->
+              <div class="space-y-1.5">
+                <label class="block font-semibold text-blue-300 flex items-center gap-1.5">
+                  <span>⚔️</span> Posicionamento Militar & Esquadrões
+                </label>
+                <textarea id="ordemMilitar" rows="4" class="w-full p-3 bg-ninja-950 rounded-xl border border-gray-800 text-gray-200 focus:border-ninja-gold focus:outline-none" placeholder="Ex: Mover o 2º Pelotão Chunin para patrulhar as rotas de comércio próximas ao País do Rio. Manter esquadrões de reserva em alerta."></textarea>
+              </div>
+
+              <!-- Diplomacia Secreta -->
+              <div class="space-y-1.5">
+                <label class="block font-semibold text-emerald-300 flex items-center gap-1.5">
+                  <span>🕊️</span> Diplomacia Feudal & Pactos
+                </label>
+                <textarea id="ordemDiplomatica" rows="4" class="w-full p-3 bg-ninja-950 rounded-xl border border-gray-800 text-gray-200 focus:border-ninja-gold focus:outline-none" placeholder="Ex: Enviar mensageiro discreto ao Kage Satori de Suna propondo tratado de não-agressão e intercâmbio de ferro por madeira."></textarea>
+              </div>
+
+              <!-- Espionagem e Reconhecimento -->
+              <div class="space-y-1.5">
+                <label class="block font-semibold text-purple-300 flex items-center gap-1.5">
+                  <span>🕵️</span> Espionagem & Reconhecimento Tático
+                </label>
+                <textarea id="ordemEspionagem" rows="4" class="w-full p-3 bg-ninja-950 rounded-xl border border-gray-800 text-gray-200 focus:border-ninja-gold focus:outline-none" placeholder="Ex: Ativar observadores discretos nos limites da floresta para monitorar possíveis bandos ronin ou batedores de outras vilas."></textarea>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-gray-800">
+              <span class="text-gray-400 text-[11px]">As ordens ficam criptografadas e salvas no banco Supabase para cálculo da rodada.</span>
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="copiarOrdensFormatadas()" class="px-4 py-2 rounded-lg bg-ninja-850 hover:bg-ninja-800 text-gray-300 border border-gray-700 font-medium transition">
+                  📋 Copiar p/ Mestre
+                </button>
+                <button type="submit" class="px-5 py-2 rounded-lg bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-black font-bold shadow-lg transition">
+                  🚀 Submeter Ordens do Ano 3
+                </button>
+              </div>
+            </div>
+          </form>
+
+          <!-- Resumo de Ordens Submetidas -->
+          <div id="ordensSubmetidasAviso" class="hidden p-4 bg-emerald-950/40 border border-emerald-500/40 rounded-xl space-y-2">
+            <div class="flex items-center gap-2 text-emerald-400 font-bold text-sm">
+              <span>✅</span> Ordens do Ano 3 Registradas com Sucesso!
+            </div>
+            <p class="text-xs text-gray-300">Suas instruções foram empacotadas e enviadas ao banco de dados. O Mestre irá processar a virada para o Ano 4.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB: MURAL DAS CORTES ================= -->
+      <section id="tab-missoes" class="tab-content hidden space-y-6">
+        <div class="card-ninja p-6 rounded-2xl border border-ninja space-y-5">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-gray-800 pb-3">
+            <div>
+              <h2 class="text-2xl font-cinzel font-bold text-amber-200">Mural de Contratos das Cinco Cortes</h2>
+              <p class="text-xs text-gray-400">Missões comissionadas pelos Senhores Feudais (Daimyōs). Rendem Ryō, suprimentos e confiança política.</p>
+            </div>
+          </div>
+
+          <!-- Nível de Confiança com os 5 Daimyōs -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            <div class="p-3 bg-ninja-950 rounded-xl border border-gray-800 space-y-1">
+              <div class="text-[11px] text-gray-400">Fogo · Masanori Akitsu</div>
+              <div class="text-sm font-bold text-amber-300">Confiança: 85%</div>
+              <div class="w-full bg-ninja-900 rounded-full h-1.5 overflow-hidden">
+                <div class="bg-red-500 h-1.5 rounded-full" style="width: 85%"></div>
+              </div>
+            </div>
+            <div class="p-3 bg-ninja-950 rounded-xl border border-gray-800 space-y-1">
+              <div class="text-[11px] text-gray-400">Vento · Sayuri Kazehara</div>
+              <div class="text-sm font-bold text-amber-300">Confiança: 60%</div>
+              <div class="w-full bg-ninja-900 rounded-full h-1.5 overflow-hidden">
+                <div class="bg-amber-500 h-1.5 rounded-full" style="width: 60%"></div>
+              </div>
+            </div>
+            <div class="p-3 bg-ninja-950 rounded-xl border border-gray-800 space-y-1">
+              <div class="text-[11px] text-gray-400">Raio · Akemi Narukami</div>
+              <div class="text-sm font-bold text-amber-300">Confiança: 45%</div>
+              <div class="w-full bg-ninja-900 rounded-full h-1.5 overflow-hidden">
+                <div class="bg-blue-500 h-1.5 rounded-full" style="width: 45%"></div>
+              </div>
+            </div>
+            <div class="p-3 bg-ninja-950 rounded-xl border border-gray-800 space-y-1">
+              <div class="text-[11px] text-gray-400">Água · Tadahisa Mizunoe</div>
+              <div class="text-sm font-bold text-amber-300">Confiança: 50%</div>
+              <div class="w-full bg-ninja-900 rounded-full h-1.5 overflow-hidden">
+                <div class="bg-cyan-500 h-1.5 rounded-full" style="width: 50%"></div>
+              </div>
+            </div>
+            <div class="p-3 bg-ninja-950 rounded-xl border border-gray-800 space-y-1">
+              <div class="text-[11px] text-gray-400">Terra · Kiyomasa Ishidate</div>
+              <div class="text-sm font-bold text-amber-300">Confiança: 35%</div>
+              <div class="w-full bg-ninja-900 rounded-full h-1.5 overflow-hidden">
+                <div class="bg-emerald-500 h-1.5 rounded-full" style="width: 35%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cards de Missões -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+            <!-- Missão 1 -->
+            <div class="p-4 bg-ninja-950 rounded-xl border border-ninja space-y-3 flex flex-col justify-between">
+              <div class="space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="px-2 py-0.5 rounded bg-blue-900/40 text-blue-300 font-mono font-bold">Rank C</span>
+                  <span class="text-emerald-400 font-bold">+1.200 Ryō</span>
+                </div>
+                <h4 class="font-bold text-white text-sm">Escolta de Caravana de Grãos da Primavera</h4>
+                <p class="text-gray-400 text-[11px] leading-relaxed">
+                  Garantir trânsito seguro de comboio agrícola entre os vales centrais e o Palácio do Cedro Rubro contra bandidos ronin.
+                </p>
+                <div class="text-amber-200/80 text-[11px]">Bônus: +300 Comida para os estoques da vila.</div>
+              </div>
+              <button onclick="aceitarMissao(this, 'Escolta de Caravana')" class="w-full py-2 rounded-lg bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 border border-emerald-500/50 font-semibold transition">
+                Atribuir Esquadrão
+              </button>
+            </div>
+
+            <!-- Missão 2 -->
+            <div class="p-4 bg-ninja-950 rounded-xl border border-ninja space-y-3 flex flex-col justify-between">
+              <div class="space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="px-2 py-0.5 rounded bg-amber-900/40 text-amber-300 font-mono font-bold">Rank B</span>
+                  <span class="text-emerald-400 font-bold">+2.500 Ryō</span>
+                </div>
+                <h4 class="font-bold text-white text-sm">Mapeamento Mineral de Jazidas de Enxofre</h4>
+                <p class="text-gray-400 text-[11px] leading-relaxed">
+                  Incursão e prospecção de minas secretas nas ravinas do Deserto Ocidental com contenção de tempestades e criaturas hostis.
+                </p>
+                <div class="text-amber-200/80 text-[11px]">Bônus: +500 Ferro e +10% Confiança com Suna.</div>
+              </div>
+              <button onclick="aceitarMissao(this, 'Mapeamento Mineral')" class="w-full py-2 rounded-lg bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 border border-emerald-500/50 font-semibold transition">
+                Atribuir Esquadrão
+              </button>
+            </div>
+
+            <!-- Missão 3 -->
+            <div class="p-4 bg-ninja-950 rounded-xl border border-ninja space-y-3 flex flex-col justify-between">
+              <div class="space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="px-2 py-0.5 rounded bg-red-900/40 text-red-300 font-mono font-bold">Rank A</span>
+                  <span class="text-emerald-400 font-bold">+4.000 Ryō</span>
+                </div>
+                <h4 class="font-bold text-white text-sm">Eliminação de Núcleo Ronin em Kawa</h4>
+                <p class="text-gray-400 text-[11px] leading-relaxed">
+                  Neutralizar fortaleza clandestina de renegados que ameaçam a navegação comercial dos rios centrais.
+                </p>
+                <div class="text-amber-200/80 text-[11px]">Bônus: Espólio de guerra (+1 Espada Lendária ou Tarjas).</div>
+              </div>
+              <button onclick="aceitarMissao(this, 'Eliminação de Núcleo')" class="w-full py-2 rounded-lg bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 border border-emerald-500/50 font-semibold transition">
+                Atribuir Esquadrão
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB: GITHUB & NETLIFY ================= -->
+      <section id="tab-deploy" class="tab-content hidden space-y-6">
+        <div class="card-ninja p-6 rounded-2xl border border-ninja space-y-5">
+          <div>
+            <span class="px-2.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-xs font-mono font-bold">ARQUITETURA DEFINITIVA</span>
+            <h2 class="text-2xl font-cinzel font-bold text-amber-200 mt-1">Como colocar o jogo online no Netlify (Grátis)</h2>
+            <p class="text-xs text-gray-400">Guia de 3 passos para publicar seu WG permanentemente sem depender de planos pagos.</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+            <div class="p-4 bg-ninja-950 rounded-xl border border-gray-800 space-y-2">
+              <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center text-sm">1</div>
+              <h4 class="font-bold text-white text-sm">Banco Supabase</h4>
+              <p class="text-gray-400 leading-relaxed">
+                Crie um projeto no Supabase (grátis), vá no SQL Editor e execute o arquivo <code class="text-amber-300">schema.sql</code> gerado no pacote. Suas 8 tabelas serão criadas instantaneamente.
+              </p>
+            </div>
+
+            <div class="p-4 bg-ninja-950 rounded-xl border border-gray-800 space-y-2">
+              <div class="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 font-bold flex items-center justify-center text-sm">2</div>
+              <h4 class="font-bold text-white text-sm">Repositório GitHub</h4>
+              <p class="text-gray-400 leading-relaxed">
+                Crie um repositório no GitHub (ex: <code class="text-amber-300">wg-mundo-ninja</code>) e suba os arquivos do pacote zip.
+              </p>
+            </div>
+
+            <div class="p-4 bg-ninja-950 rounded-xl border border-gray-800 space-y-2">
+              <div class="w-8 h-8 rounded-lg bg-purple-500/20 text-purple-400 font-bold flex items-center justify-center text-sm">3</div>
+              <h4 class="font-bold text-white text-sm">Deploy no Netlify</h4>
+              <p class="text-gray-400 leading-relaxed">
+                No Netlify, clique em "Import from GitHub". Em 30 segundos ele gera o link online definitivo para os seus jogadores acessarem de qualquer celular ou computador!
+              </p>
+            </div>
+          </div>
+
+          <!-- Supabase Direct Config Box -->
+          <div class="p-5 bg-ninja-950 rounded-xl border border-ninja space-y-4">
+            <h4 class="font-bold text-amber-300 text-sm flex items-center gap-2">
+              <span>⚡</span> Conectar Este Navegador ao seu Supabase
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+              <div>
+                <label class="block text-gray-400 mb-1">Supabase Project URL</label>
+                <input type="text" id="supabaseUrlInput" placeholder="https://seu-projeto.supabase.co" class="w-full p-2.5 bg-ninja-900 rounded-lg border border-gray-700 text-gray-200 focus:border-ninja-gold focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-gray-400 mb-1">Supabase Anon Public Key</label>
+                <input type="password" id="supabaseKeyInput" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." class="w-full p-2.5 bg-ninja-900 rounded-lg border border-gray-700 text-gray-200 focus:border-ninja-gold focus:outline-none">
+              </div>
+            </div>
+            <div class="flex items-center justify-between">
+              <span id="supabaseStatusText" class="text-xs text-gray-400">Modo Local / Simulação ativo (salvamento no navegador).</span>
+              <button onclick="salvarCredenciaisSupabase()" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition">
+                Salvar e Sincronizar
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  
+  <!-- MODAL: PROCESSAR VIRADA DE ANO AUTOMÁTICA -->
+  <div id="modalViradaAno" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="card-ninja p-6 rounded-2xl border border-ninja max-w-2xl w-full space-y-5 text-xs max-h-[90vh] flex flex-col justify-between">
+      <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">⏳</span>
+          <div>
+            <h3 class="font-cinzel font-bold text-amber-300 text-base">Motor de Resolução Anual Automático</h3>
+            <p class="text-gray-400 text-[11px]">Transição oficial: <span id="anoAtualLabel">Ano 3</span> ➔ <span id="proximoAnoLabel" class="text-amber-400 font-bold">Ano 4</span></p>
+          </div>
+        </div>
+        <button onclick="fecharModalViradaAno()" class="text-gray-400 hover:text-white text-lg">✕</button>
+      </div>
+
+      <div class="overflow-y-auto space-y-4 pr-1 text-gray-300">
+        <div class="p-4 bg-ninja-950 rounded-xl border border-ninja space-y-2">
+          <div class="font-bold text-amber-200 text-sm">O que o sistema calculará automaticamente para todas as 5 vilas:</div>
+          <ul class="space-y-1.5 text-[11px] text-gray-300">
+            <li>🌾 <strong>Produção Agrícola:</strong> Cálculo da base populacional + modificadores de bioma (+25% Folha, -25% Areia) + <strong>Bônus da Primavera (+15%)</strong>.</li>
+            <li>⛏️ <strong>Produção Mineral & Ouro:</strong> Rendimento de minas de ferro, madeira e ouro para o cofre.</li>
+            <li>💸 <strong>Manutenção Militar:</strong> Desconto de Ryō e Comida para sustentar Genins (60/60), Chunins (150/120) e Jonins (350/200).</li>
+            <li>⛩️ <strong>Resolução de Missões:</strong> Finalização de contratos atribuídos a esquadrões, crédito de recompensas em Ryō e aumento de confiança dos Daimyōs.</li>
+            <li>🔬 <strong>Avanço Tecnológico:</strong> Conclusão ou progresso das pesquisas ativas das vilas.</li>
+            <li>📖 <strong>Crônica do Mundo:</strong> Redação e publicação automática do capítulo oficial do novo ano.</li>
+          </ul>
+        </div>
+
+        <div id="resultadoCalculoTurno" class="hidden p-4 bg-ninja-950 rounded-xl border border-emerald-500/40 space-y-3">
+          <div class="text-emerald-400 font-bold text-sm flex items-center gap-2">
+            <span>✅</span> Resolução do Turno Executada com Sucesso!
+          </div>
+          <div id="relatorioDeltasVilas" class="space-y-2 text-[11px]"></div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between pt-3 border-t border-gray-800">
+        <span class="text-gray-400 text-[11px]">Os novos saldos são salvos e atualizados instantaneamente nas telas.</span>
+        <div class="flex items-center gap-2">
+          <button onclick="fecharModalViradaAno()" class="px-4 py-2 rounded-lg bg-ninja-850 hover:bg-ninja-800 text-gray-300 transition">Fechar</button>
+          <button id="btnExecutarVirada" onclick="executarViradaDeAnoCompleta()" class="px-5 py-2 rounded-lg bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-black font-extrabold shadow-lg transition">
+            ⚡ Executar Virada para o Ano 4
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none bg-ninja-900 border border-ninja-gold text-amber-200 px-4 py-3 rounded-xl shadow-2xl text-xs flex items-center gap-2">
+    <span id="toastIcon">✨</span>
+    <span id="toastMsg">Mensagem de aviso</span>
+  </div>
+
+  <!-- MODAL: AJUSTE DE RECURSOS / COFRE -->
+  <div id="modalRecursos" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="card-ninja p-6 rounded-2xl border border-ninja max-w-md w-full space-y-4 text-xs">
+      <div class="flex items-center justify-between border-b border-gray-800 pb-2.5">
+        <h3 class="font-bold text-amber-300 text-sm">Ajustar Cofre da Vila (Mestre)</h3>
+        <button onclick="fecharModalRecursos()" class="text-gray-400 hover:text-white text-base">✕</button>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-gray-400 mb-1">Ryō (Ouro)</label>
+          <input type="number" id="inputRyo" class="w-full p-2 bg-ninja-950 rounded border border-gray-800 text-amber-300 font-bold">
+        </div>
+        <div>
+          <label class="block text-gray-400 mb-1">Comida</label>
+          <input type="number" id="inputComida" class="w-full p-2 bg-ninja-950 rounded border border-gray-800 text-emerald-300 font-bold">
+        </div>
+        <div>
+          <label class="block text-gray-400 mb-1">Madeira</label>
+          <input type="number" id="inputMadeira" class="w-full p-2 bg-ninja-950 rounded border border-gray-800 text-amber-200 font-bold">
+        </div>
+        <div>
+          <label class="block text-gray-400 mb-1">Pedra</label>
+          <input type="number" id="inputPedra" class="w-full p-2 bg-ninja-950 rounded border border-gray-800 text-gray-300 font-bold">
+        </div>
+        <div>
+          <label class="block text-gray-400 mb-1">Ferro</label>
+          <input type="number" id="inputFerro" class="w-full p-2 bg-ninja-950 rounded border border-gray-800 text-blue-300 font-bold">
+        </div>
+        <div>
+          <label class="block text-gray-400 mb-1">População</label>
+          <input type="number" id="inputPop" class="w-full p-2 bg-ninja-950 rounded border border-gray-800 text-white font-bold">
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 pt-2 border-t border-gray-800">
+        <button onclick="fecharModalRecursos()" class="px-3 py-1.5 rounded bg-ninja-850 text-gray-300">Cancelar</button>
+        <button onclick="salvarRecursosAjustados()" class="px-4 py-1.5 rounded bg-ninja-gold text-black font-bold">Salvar Cofre</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT STATE ENGINE -->
+  <script>
+    // Vilas e Dados Base (Ano 3)
+    const dadosVilas = {
+      folha: {
+        nome: "Konohagakure (Vila da Folha)",
+        subtitulo: "País do Fogo · Florestas Ancestrais · Daimyō Masanori Akitsu",
+        emblema: "🍃",
+        kage: "Raizen",
+        cla: "Clã Senju · Foco Doton",
+        especialidade: "Mestre em Liberação de Terra (Doton) e fortificações em larga escala. Robustez física e combate tático. Sem Mokuton ativo no T3.",
+        avatarLetra: "R",
+        chakra: 100,
+        status: "Operacional e descansado.",
+        ryo: 3500, comida: 3200, madeira: 2400, pedra: 700, ferro: 900, mdo: "8 / 8", pop: 8500,
+        pesquisa: "Serraria Hidráulica & Fortificação de Madeira (75%)",
+        possui: ["• 1x Mina de Ouro (Ativa no T2)", "• 2x Fazendas Fluviais", "• 1x Sede de Alojamentos", "• 1x Oficina de Ferreiros"],
+        conhece: ["• Doton: Muralha de Lama (25 ch.)", "• Doton: Lança de Rocha (20 ch.)", "• Tática de Fortificação Fluvial", "• Arquitetura Militar Básica"],
+        bolsa: ["• 12x Kunais com Tarja Explosiva", "• 20x Shurikens de Aço", "• 2x Pergaminhos de Terra", "• 3x Pílulas de Soldado"]
+      },
+      areia: {
+        nome: "Sunagakure (Vila da Areia)",
+        subtitulo: "País do Vento · Deserto e Dunas · Daimyō Sayuri Kazehara",
+        emblema: "⏳",
+        kage: "Satori",
+        cla: "Especialista em Marionetes (Kugutsu)",
+        especialidade: "Controle de fios de chakra a até 50m. Mecanismos ocultos com senbons envenenadas e lâminas retráteis.",
+        avatarLetra: "S",
+        chakra: 100,
+        status: "Operacional (Reforçado após T2).",
+        ryo: 4200, comida: 1800, madeira: 900, pedra: 1500, ferro: 2100, mdo: "7 / 7", pop: 7200,
+        pesquisa: "Automação Mecânica de Marionetes (60%)",
+        possui: ["• 1x Oásis Fértil (+500 comida/ano)", "• 2x Forjas de Ferro Avançadas", "• 1x Oficina Kugutsu"],
+        conhece: ["• Fios de Chakra de Longo Alcance", "• Mecanismo de Disparo de Senbon Oculto", "• Síntese de Toxina Básica"],
+        bolsa: ["• 1x Marionete de Combate 'Karasu Mod'", "• 40x Senbons Envenenadas", "• 3x Bombas de Fumaça"]
+      },
+      nuvem: {
+        nome: "Kumogakure (Vila da Nuvem)",
+        subtitulo: "País do Raio · Montanhas Altas · Daimyō Akemi Narukami",
+        emblema: "⚡",
+        kage: "Aburame Raiden",
+        cla: "Clã Aburame · Kikaichū",
+        especialidade: "Controle de enxames de insetos para espionagem e drenagem de chakra (custo fixo 20 ch., alcance 50m).",
+        avatarLetra: "A",
+        chakra: 100,
+        status: "Operacional.",
+        ryo: 3100, comida: 1900, madeira: 1100, pedra: 2400, ferro: 1400, mdo: "7 / 7", pop: 6800,
+        pesquisa: "Comunicação por Insetos de Altitude (50%)",
+        possui: ["• 1x Ninho Central de Kikaichū", "• 1x Pedreira de Altitude", "• 1x Posto de Observação dos Cumes"],
+        conhece: ["• Kikaichū: Rastreamento em 50m (20 ch.)", "• Kikaichū: Drenagem Passiva de Chakra", "• Camuflagem em Neblina"],
+        bolsa: ["• 1x Cabassa de Insetos Kikaichū", "• 10x Kunais Simples", "• 2x Frascos de Seiva Atrativa"]
+      },
+      geada: {
+        nome: "Shimogakure (Vila da Geada)",
+        subtitulo: "País da Geada · Tundra Congelada · Lorde de Shimo",
+        emblema: "❄️",
+        kage: "Dorutan Tenkyô",
+        cla: "Clã Hyūga · Byakugan",
+        especialidade: "Byakugan calibrado para reconhecimento tático (custo 20 ch., alcance 50m, 1 cena). Jūken de defesa.",
+        avatarLetra: "D",
+        chakra: 100,
+        status: "Operacional.",
+        ryo: 2200, comida: 2400, madeira: 1200, pedra: 1100, ferro: 700, mdo: "6 / 6", pop: 4200,
+        pesquisa: "Abrigos Térmicos Subterrâneos (40%)",
+        possui: ["• 1x Abrigo Reforçado de Pedra de Gelo", "• 1x Fazenda Estufa", "• 1x Alojamento Comunal"],
+        conhece: ["• Byakugan: Ativação Tática (20 ch.)", "• Jūken: Palmas de Bloqueio Básico", "• Rastreamento em Tempestades de Neve"],
+        bolsa: ["• 15x Senbons", "• 5x Tarjas de Aquecimento", "• 2x Pílulas Energéticas"]
+      },
+      cachoeira: {
+        nome: "Takigakure (Vila da Cachoeira)",
+        subtitulo: "País da Cachoeira · Gargantas e Quedas D'água · Lorde de Taki",
+        emblema: "🌊",
+        kage: "Tsuchinoko",
+        cla: "Sem Clã · Especialista em Taijutsu",
+        especialidade: "Taijutsu acrobático e combate de impacto pesado em desfiladeiros. Agilidade física extrema.",
+        avatarLetra: "T",
+        chakra: 100,
+        status: "Operacional.",
+        ryo: 2600, comida: 2100, madeira: 1300, pedra: 1000, ferro: 800, mdo: "6 / 6", pop: 4900,
+        pesquisa: "Aproveitamento Hidráulico das Quedas (65%)",
+        possui: ["• 1x Fortaleza Oculta da Gruta", "• 2x Pesqueiros Fluviais de Cachoeira", "• 1x Dojo de Treino de Impacto"],
+        conhece: ["• Taijutsu: Punho Britador de Rocha", "• Salto em Desfiladeiro e Esquiva Acrobática", "• Sobrevivência em Corredeiras"],
+        bolsa: ["• Luvas e Caneleiras com Reforço de Ferro", "• 10x Kunais Balanceadas", "• 5x Cordas de Escalada"]
+      },
+      mestre: {
+        nome: "Salão da Sol (Co-Mestre)",
+        subtitulo: "Visão Panóptica · Avaliação e Arbitragem do Mundo Ninja",
+        emblema: "📜",
+        kage: "Sol & Mestre",
+        cla: "Juiz e Narrador da Campanha",
+        especialidade: "Cálculo de turnos, resolução de combate com dados, aplicação de atrito territorial e escrita das Crônicas.",
+        avatarLetra: "M",
+        chakra: 999,
+        status: "Mestre em sessão ativa.",
+        ryo: 99999, comida: 99999, madeira: 99999, pedra: 99999, ferro: 99999, mdo: "∞", pop: 50000,
+        pesquisa: "Sistema do Ano 3 em Operação",
+        possui: ["• Todos os relatórios das 5 vilas", "• Dados das Cinco Grandes Cortes Feudais", "• Arquivo de missões e desfechos"],
+        conhece: ["• Todas as regras e jutsus", "• Tabelas de atrito e biomas", "• Histórico do Ano 1 e Ano 2"],
+        bolsa: ["• Dados d20 de resolução", "• Matriz de cálculo de colheitas", "• Grimório da Era da Fundação"]
+      }
+    };
+
+    let vilaAtual = "folha";
+
+    // Navegação por Abas
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.nav-tab').forEach(el => {
+        el.classList.remove('active', 'bg-ninja-800', 'text-amber-300');
+        el.classList.add('text-gray-300');
+      });
+
+      const activeSection = document.getElementById(`tab-${tabId}`);
+      if (activeSection) activeSection.classList.remove('hidden');
+
+      const activeBtn = document.querySelector(`.nav-tab[data-tab="${tabId}"]`);
+      if (activeBtn) {
+        activeBtn.classList.add('active', 'bg-ninja-800', 'text-amber-300');
+        activeBtn.classList.remove('text-gray-300');
+      }
+    }
+
+    // Atualização da Vila Selecionada
+    function atualizarPainelVila(chave) {
+      vilaAtual = chave;
+      const v = dadosVilas[chave] || dadosVilas.folha;
+
+      document.getElementById('vilaNome').textContent = v.nome;
+      document.getElementById('vilaSubtitulo').textContent = v.subtitulo;
+      document.getElementById('vilaEmblema').textContent = v.emblema;
+      document.getElementById('kageNome').textContent = v.kage;
+      document.getElementById('kageCla').textContent = v.cla;
+      document.getElementById('kageEspecialidade').textContent = v.especialidade;
+      document.getElementById('kageStatus').textContent = v.status;
+      document.getElementById('kageAvatar').textContent = v.avatarLetra;
+
+      document.getElementById('valRyo').textContent = Number(v.ryo).toLocaleString('pt-BR');
+      document.getElementById('valComida').textContent = Number(v.comida).toLocaleString('pt-BR');
+      document.getElementById('valMadeira').textContent = Number(v.madeira).toLocaleString('pt-BR');
+      document.getElementById('valPedra').textContent = Number(v.pedra).toLocaleString('pt-BR');
+      document.getElementById('valFerro').textContent = Number(v.ferro).toLocaleString('pt-BR');
+      document.getElementById('valMdo').textContent = v.mdo;
+      document.getElementById('valPop').textContent = Number(v.pop).toLocaleString('pt-BR');
+
+      // Ficha Tripartite
+      const ulPossui = document.getElementById('listaPossui');
+      ulPossui.innerHTML = v.possui.map(item => `<li>${item}</li>`).join('');
+
+      const ulConhece = document.getElementById('listaConhece');
+      ulConhece.innerHTML = v.conhece.map(item => `<li>${item}</li>`).join('');
+
+      const ulBolsa = document.getElementById('listaBolsa');
+      ulBolsa.innerHTML = v.bolsa.map(item => `<li>${item}</li>`).join('');
+
+      document.getElementById('pesquisaNome').textContent = v.pesquisa;
+    }
+
+    document.getElementById('villageSelect').addEventListener('change', (e) => {
+      atualizarPainelVila(e.target.value);
+      showToast(`Visão alterada para ${dadosVilas[e.target.value].nome}`);
+    });
+
+    // Colheita de Primavera (+15% em comida)
+    function simularColheitaPrimavera() {
+      const v = dadosVilas[vilaAtual];
+      const bonus = Math.floor(v.comida * 0.15);
+      v.comida += bonus;
+      document.getElementById('valComida').textContent = Number(v.comida).toLocaleString('pt-BR');
+      showToast(`🌾 Colheita de Primavera aplicada! +${bonus} Comida adicionada ao cofre de ${v.kage}.`);
+    }
+
+    // Modal de Recursos
+    function abrirModalEdicaoRecursos() {
+      const v = dadosVilas[vilaAtual];
+      document.getElementById('inputRyo').value = v.ryo;
+      document.getElementById('inputComida').value = v.comida;
+      document.getElementById('inputMadeira').value = v.madeira;
+      document.getElementById('inputPedra').value = v.pedra;
+      document.getElementById('inputFerro').value = v.ferro;
+      document.getElementById('inputPop').value = v.pop;
+      document.getElementById('modalRecursos').classList.remove('hidden');
+      document.getElementById('modalRecursos').classList.add('flex');
+    }
+
+    function fecharModalRecursos() {
+      document.getElementById('modalRecursos').classList.add('hidden');
+      document.getElementById('modalRecursos').classList.remove('flex');
+    }
+
+    function salvarRecursosAjustados() {
+      const v = dadosVilas[vilaAtual];
+      v.ryo = parseInt(document.getElementById('inputRyo').value) || v.ryo;
+      v.comida = parseInt(document.getElementById('inputComida').value) || v.comida;
+      v.madeira = parseInt(document.getElementById('inputMadeira').value) || v.madeira;
+      v.pedra = parseInt(document.getElementById('inputPedra').value) || v.pedra;
+      v.ferro = parseInt(document.getElementById('inputFerro').value) || v.ferro;
+      v.pop = parseInt(document.getElementById('inputPop').value) || v.pop;
+      atualizarPainelVila(vilaAtual);
+      fecharModalRecursos();
+      showToast('💰 Cofre atualizado com sucesso!');
+    }
+
+    // Status de Esquadrão
+    function alterarStatusEsquadrao(btn) {
+      const card = btn.closest('.card-ninja');
+      const badge = card.querySelector('span:nth-child(2)');
+      const estados = [
+        { txt: 'Disponível', cor: 'bg-emerald-950 text-emerald-300 border-emerald-500/30' },
+        { txt: 'Em Missão', cor: 'bg-amber-950 text-amber-300 border-amber-500/30' },
+        { txt: 'Apto', cor: 'bg-blue-950 text-blue-300 border-blue-500/30' },
+        { txt: 'Ferido', cor: 'bg-red-950 text-red-300 border-red-500/30' }
+      ];
+      const atualIdx = estados.findIndex(e => e.txt === badge.textContent.trim());
+      const prox = estados[(atualIdx + 1) % estados.length];
+      badge.textContent = prox.txt;
+      badge.className = `px-2 py-0.5 rounded border text-[10px] ${prox.cor}`;
+      showToast(`Status do esquadrão alterado para: ${prox.txt}`);
+    }
+
+    // Recrutar Novo Esquadrão
+    function abrirModalNovoEsquadrao() {
+      const nome = prompt ? "Novo Pelotão Shinobi" : "Novo Pelotão";
+      const grid = document.getElementById('esquadroesGrid');
+      const card = document.createElement('div');
+      card.className = "card-ninja p-4 rounded-xl border border-ninja space-y-3";
+      card.innerHTML = `
+        <div class="flex items-center justify-between">
+          <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px] font-bold">Novo · Genin</span>
+          <span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-500/30 text-[10px]">Disponível</span>
+        </div>
+        <div>
+          <div class="font-bold text-white text-sm">Pelotão Recém-Formado</div>
+          <div class="text-xs text-gray-400">4 ninjas · Base Central</div>
+        </div>
+        <div class="text-[11px] text-gray-300 bg-ninja-950 p-2 rounded border border-gray-800">
+          Equipamento padrão: Kunais, shurikens e cantil.
+        </div>
+        <div class="flex items-center gap-2 pt-1">
+          <button onclick="alterarStatusEsquadrao(this)" class="w-full py-1 rounded bg-ninja-850 hover:bg-ninja-800 text-gray-300 border border-gray-700 text-xs transition">
+            Mudar Status
+          </button>
+        </div>
+      `;
+      grid.appendChild(card);
+      showToast("🥷 Novo esquadrão recrutado e alojado na vila!");
+    }
+
+    // Mapa Interativo
+    function selecionarRegiaoMapa(regiao) {
+      const regioes = {
+        fogo: { nome: "País do Fogo (Konohagakure)", daimyo: "Daimyō Masanori Akitsu", bonus: "+25% Comida, +25% Madeira", penalidade: "-25% Produção de Pedra", palacio: "Palácio do Cedro Rubro" },
+        vento: { nome: "País do Vento (Sunagakure)", daimyo: "Daimyō Sayuri Kazehara", bonus: "+25% Ferro, +25% Comércio", penalidade: "-25% Comida e Madeira", palacio: "Palácio do Horizonte de Âmbar" },
+        raio: { nome: "País do Raio (Kumogakure)", daimyo: "Daimyō Akemi Narukami", bonus: "+25% Pedra, Táticas de Altitude", penalidade: "-15% Agricultura Plana", palacio: "Palácio do Cume Dourado" },
+        terra: { nome: "País da Terra (Iwagakure)", daimyo: "Daimyō Kiyomasa Ishidate", bonus: "+25% Pedra e Minérios Pesados", penalidade: "-20% Madeira", palacio: "Palácio do Baluarte de Bronze" },
+        agua: { nome: "País da Água (Kirigakure)", daimyo: "Daimyō Tadahisa Mizunoe", bonus: "Vantagem Tática Naval, Invasão Terrestre Impossível", penalidade: "-25% Relações Comerciais", palacio: "Palácio das Marés de Jade" },
+        geada: { nome: "País da Geada (Shimogakure)", daimyo: "Lorde de Shimo", bonus: "Custo de movimento dobrado para invasores na neve", penalidade: "-20% Vegetação Natural", palacio: "Fortaleza Congelada de Shimo" },
+        cachoeira: { nome: "País da Cachoeira (Takigakure)", daimyo: "Lorde de Taki", bonus: "Defesa natural impenetrável contra cerco rápido", penalidade: "-15% Rotas Comerciais", palacio: "Gruta das Quedas Altas" },
+        chuva: { nome: "País da Chuva (Amegakure)", daimyo: "Lorde de Ame", bonus: "Defesa natural alta, desgaste severo para invasores", penalidade: "-10% Crescimento Agrícola", palacio: "Torre das Águas de Ame" }
+      };
+
+      const r = regioes[regiao];
+      if (!r) return;
+
+      document.getElementById('mapaRegiaoNome').textContent = r.nome;
+      document.getElementById('mapaDaimyo').textContent = `Soberano Feudal: ${r.daimyo}`;
+      document.getElementById('mapaBonus').textContent = r.bonus;
+      document.getElementById('mapaPenalidade').textContent = r.penalidade;
+      document.getElementById('mapaPalacio').textContent = r.palacio;
+      showToast(`Região inspecionada: ${r.nome}`);
+    }
+
+    // Submissão de Ordens Secretas
+    function submeterOrdens(e) {
+      e.preventDefault();
+      const ordens = {
+        vila: dadosVilas[vilaAtual].nome,
+        ano: 3,
+        economica: document.getElementById('ordemEconomica').value,
+        militar: document.getElementById('ordemMilitar').value,
+        diplomatica: document.getElementById('ordemDiplomatica').value,
+        espionagem: document.getElementById('ordemEspionagem').value,
+        data: new Date().toISOString()
+      };
+
+      try {
+        localStorage.setItem(`ordens_ano3_${vilaAtual}`, JSON.stringify(ordens));
+      } catch (err) {}
+
+      document.getElementById('ordensSubmetidasAviso').classList.remove('hidden');
+      showToast("📜 Ordens Secretas do Ano 3 registradas e enviadas ao Mestre!");
+    }
+
+    function copiarOrdensFormatadas() {
+      const v = dadosVilas[vilaAtual];
+      const texto = `**ORDENS SECRETAS — ANO 3**\n` +
+        `Vila: ${v.nome}\n` +
+        `Kage: ${v.kage}\n\n` +
+        `🌾 Econômica:\n${document.getElementById('ordemEconomica').value || 'Nenhuma'}\n\n` +
+        `⚔️ Militar:\n${document.getElementById('ordemMilitar').value || 'Nenhuma'}\n\n` +
+        `🕊️ Diplomacia:\n${document.getElementById('ordemDiplomatica').value || 'Nenhuma'}\n\n` +
+        `🕵️ Espionagem:\n${document.getElementById('ordemEspionagem').value || 'Nenhuma'}`;
+
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(texto).then(() => {
+          showToast("📋 Ordens copiadas para a área de transferência!");
+        });
+      } else {
+        showToast("Selecione e copie o texto manualmente.");
+      }
+    }
+
+    // Aceitar Missão das Cinco Cortes
+    function aceitarMissao(btn, missaoNome) {
+      btn.textContent = "✓ Atribuída ao 2º Pelotão";
+      btn.classList.remove('bg-emerald-600/30', 'text-emerald-300', 'border-emerald-500/50');
+      btn.classList.add('bg-blue-600/30', 'text-blue-300', 'border-blue-500/50');
+      btn.disabled = true;
+      showToast(`Missão '${missaoNome}' aceita! Esquadrão designado.`);
+    }
+
+    // Reações em Crônicas
+    function adicionarReacao(btn, tipo) {
+      const countSpan = btn.querySelector('.reacao-count');
+      if (countSpan) {
+        let val = parseInt(countSpan.textContent) || 0;
+        countSpan.textContent = val + 1;
+        btn.classList.add('border-ninja-gold', 'text-amber-300');
+      }
+    }
+
+    // Modal Nova Crônica
+    function abrirModalNovaCronica() {
+      const titulo = prompt ? "Capítulo Adicional · Virada de Ano" : "";
+      showToast("Área do Mestre: Adição de crônica configurada.");
+    }
+
+    // Collapse Guia
+    function toggleCollapse(id) {
+      const el = document.getElementById(id);
+      const icon = document.getElementById(id + 'Icon');
+      if (el.classList.contains('hidden')) {
+        el.classList.remove('hidden');
+        if (icon) icon.textContent = '▲';
+      } else {
+        el.classList.add('hidden');
+        if (icon) icon.textContent = '▼';
+      }
+    }
+
+    // Toast
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      document.getElementById('toastMsg').textContent = msg;
+      t.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => {
+        t.classList.add('translate-y-20', 'opacity-0');
+      }, 3200);
+    }
+
+    // Audio Ambience Sintetizado (Web Audio API)
+    let audioCtx = null;
+    let isPlayingAudio = false;
+    let ambientTimer = null;
+
+    document.getElementById('audioToggleBtn').addEventListener('click', () => {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+      }
+
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      isPlayingAudio = !isPlayingAudio;
+      const icon = document.getElementById('audioIcon');
+      const label = document.getElementById('audioLabel');
+
+      if (isPlayingAudio) {
+        icon.textContent = '🔊';
+        label.textContent = 'Tocando';
+        tocarSinoZen();
+        ambientTimer = setInterval(tocarSinoZen, 8000);
+        showToast("Trilha Zen Ambiental iniciada.");
+      } else {
+        icon.textContent = '🔇';
+        label.textContent = 'Mudo';
+        if (ambientTimer) clearInterval(ambientTimer);
+        showToast("Trilha silenciada.");
+      }
+    });
+
+    function tocarSinoZen() {
+      if (!audioCtx || !isPlayingAudio) return;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(329.63, audioCtx.currentTime); // Mi4
+      gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 3.5);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 3.5);
+    }
+
+    // Supabase Modal & Config
+    document.getElementById('openSupabaseModalBtn').addEventListener('click', () => {
+      switchTab('deploy');
+      showToast("Configurações do Supabase abertas!");
+    });
+
+    function salvarCredenciaisSupabase() {
+      const url = document.getElementById('supabaseUrlInput').value.trim();
+      const key = document.getElementById('supabaseKeyInput').value.trim();
+      try {
+        localStorage.setItem('supabase_url', url);
+        localStorage.setItem('supabase_key', key);
+      } catch(e) {}
+      document.getElementById('supabaseStatusText').textContent = "Credenciais salvas! Conexão Nuvem ativada.";
+      showToast("⚡ Supabase configurado com sucesso!");
+    }
+
+    
+    // ==========================================
+    // MOTOR DE AUTOMAÇÃO DE TURNOS E RECURSOS
+    // ==========================================
+    let anoAtualJogo = 3;
+
+    function abrirModalViradaAno() {
+      document.getElementById('anoAtualLabel').textContent = `Ano ${anoAtualJogo}`;
+      document.getElementById('proximoAnoLabel').textContent = `Ano ${anoAtualJogo + 1}`;
+      document.getElementById('resultadoCalculoTurno').classList.add('hidden');
+      document.getElementById('btnExecutarVirada').classList.remove('hidden');
+      document.getElementById('modalViradaAno').classList.remove('hidden');
+      document.getElementById('modalViradaAno').classList.add('flex');
+    }
+
+    function fecharModalViradaAno() {
+      document.getElementById('modalViradaAno').classList.add('hidden');
+      document.getElementById('modalViradaAno').classList.remove('flex');
+    }
+
+    function executarViradaDeAnoCompleta() {
+      anoAtualJogo += 1;
+      const proximoAno = anoAtualJogo;
+
+      // Custos de manutenção por tipo de esquadrão
+      // Genin: 60 Ryō, 60 Comida
+      // Chunin: 150 Ryō, 120 Comida
+      // Jonin: 350 Ryō, 200 Comida
+      const relatorioContainer = document.getElementById('relatorioDeltasVilas');
+      relatorioContainer.innerHTML = '';
+
+      Object.keys(dadosVilas).forEach(chave => {
+        if (chave === 'mestre') return;
+        const v = dadosVilas[chave];
+
+        // 1. População cresce
+        v.pop += 350;
+
+        // 2. Produção Agrícola
+        let ganhoComida = 1200;
+        let ganhoMadeira = 800;
+        let ganhoPedra = 600;
+        let ganhoFerro = 500;
+        let ganhoRyo = 1000;
+
+        // Modificadores de Bioma
+        if (chave === 'folha') {
+          ganhoComida = Math.floor(ganhoComida * 1.25);
+          ganhoMadeira = Math.floor(ganhoMadeira * 1.25);
+          ganhoPedra = Math.floor(ganhoPedra * 0.75);
+          ganhoRyo += 600; // Mina de Ouro ativa
+        } else if (chave === 'areia') {
+          ganhoFerro = Math.floor(ganhoFerro * 1.25);
+          ganhoRyo += 800; // Bônus comercial
+          ganhoComida = Math.floor(ganhoComida * 0.75) + 500; // Oásis
+          ganhoMadeira = Math.floor(ganhoMadeira * 0.75);
+        } else if (chave === 'nuvem') {
+          ganhoPedra = Math.floor(ganhoPedra * 1.25);
+          ganhoFerro = Math.floor(ganhoFerro * 1.10);
+        } else if (chave === 'geada') {
+          ganhoMadeira = Math.floor(ganhoMadeira * 0.80);
+          ganhoComida = Math.floor(ganhoComida * 1.10); // Estufas
+        } else if (chave === 'cachoeira') {
+          ganhoComida += 400; // Pesqueiros fluviais
+        }
+
+        // Bônus da Primavera (+15% em comida)
+        const bonusPrimavera = Math.floor(ganhoComida * 0.15);
+        ganhoComida += bonusPrimavera;
+
+        // 3. Descontos de Manutenção Militar
+        const gastoRyoMilitar = 560; // 2x Genin + 1x Chunin + 1x Jonin base
+        const gastoComidaMilitar = 440;
+
+        // Atualizar saldo
+        v.ryo = Math.max(0, v.ryo + ganhoRyo - gastoRyoMilitar);
+        v.comida = Math.max(0, v.comida + ganhoComida - gastoComidaMilitar);
+        v.madeira += ganhoMadeira;
+        v.pedra += ganhoPedra;
+        v.ferro += ganhoFerro;
+
+        // Criar card de relatório para a vila
+        const cardVila = document.createElement('div');
+        cardVila.className = "p-2.5 bg-ninja-900 rounded-lg border border-gray-800 flex justify-between items-center";
+        cardVila.innerHTML = `
+          <div>
+            <strong class="text-amber-300">${v.emblema} ${v.kage} (${v.nome.split(' ')[0]})</strong>
+            <div class="text-[10px] text-gray-400">Pop: +350 (${v.pop.toLocaleString('pt-BR')}) · Manutenção Mil: -${gastoRyoMilitar} Ryō / -${gastoComidaMilitar} Comida</div>
+          </div>
+          <div class="text-right text-[10px] text-emerald-400 font-mono">
+            +${ganhoRyo - gastoRyoMilitar} Ryō | +${ganhoComida - gastoComidaMilitar} Comida | +${ganhoFerro} Ferro
+          </div>
+        `;
+        relatorioContainer.appendChild(cardVila);
+      });
+
+      // 4. Inserir nova Crônica do Mundo automaticamente
+      const cronicasBox = document.getElementById('cronicasContainer');
+      const novaCronica = document.createElement('article');
+      novaCronica.className = "card-ninja p-5 rounded-xl border border-ninja space-y-3 animate-fade-in";
+      novaCronica.innerHTML = `
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-gray-800 pb-2.5">
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono text-xs font-bold">Capítulo 1 · Ano ${proximoAno}</span>
+            <h4 class="font-bold text-white text-base">O Desfecho da Virada e os Novos Tratados Feudais</h4>
+          </div>
+          <div class="flex items-center gap-2 text-xs">
+            <span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-500/30">Ano ${proximoAno} Aberto</span>
+          </div>
+        </div>
+        <p class="text-sm text-gray-300 leading-relaxed">
+          Os relatórios do Ano ${proximoAno} foram consolidados. A Colheita de Primavera gerou estoques recordes nos vales de Konoha e o comércio de minérios de Suna fortaleceu as fortificações de deserto. As Cinco Cortes Feudais emitiram novos decretos e contratos militares.
+        </p>
+        <div class="flex items-center justify-between pt-2">
+          <div class="flex items-center gap-1.5 text-xs">
+            <button onclick="adicionarReacao(this, 'fogo')" class="px-2.5 py-1 rounded-lg bg-ninja-850 hover:bg-ninja-800 border border-gray-800 flex items-center gap-1 transition">🔥 <span class="reacao-count">1</span></button>
+            <button onclick="adicionarReacao(this, 'espada')" class="px-2.5 py-1 rounded-lg bg-ninja-850 hover:bg-ninja-800 border border-gray-800 flex items-center gap-1 transition">⚔️ <span class="reacao-count">2</span></button>
+          </div>
+          <span class="text-[11px] text-gray-500 italic">Processado automaticamente pelo Motor do Jogo</span>
+        </div>
+      `;
+      cronicasBox.prepend(novaCronica);
+
+      // Salvar estado no LocalStorage
+      salvarEstadoCompletoNoStorage();
+
+      // Atualizar interface
+      atualizarPainelVila(vilaAtual);
+      document.getElementById('resultadoCalculoTurno').classList.remove('hidden');
+      document.getElementById('btnExecutarVirada').classList.add('hidden');
+      showToast(`🎉 Virada para o Ano ${proximoAno} concluída com sucesso! Todos os recursos atualizados.`);
+    }
+
+    // Exportar e Importar Save do Jogo em JSON
+    function salvarEstadoCompletoNoStorage() {
+      try {
+        const pacote = {
+          ano: anoAtualJogo,
+          vilas: dadosVilas,
+          dataSave: new Date().toISOString()
+        };
+        localStorage.setItem('wg_mundo_ninja_save', JSON.stringify(pacote));
+      } catch(e) {}
+    }
+
+    function carregarEstadoDoStorage() {
+      try {
+        const salvo = localStorage.getItem('wg_mundo_ninja_save');
+        if (salvo) {
+          const dados = JSON.parse(salvo);
+          if (dados.ano) anoAtualJogo = dados.ano;
+          if (dados.vilas) Object.assign(dadosVilas, dados.vilas);
+        }
+      } catch(e) {}
+    }
+
+    function exportarSaveJogo() {
+      salvarEstadoCompletoNoStorage();
+      const pacote = {
+        ano: anoAtualJogo,
+        vilas: dadosVilas,
+        exportadoEm: new Date().toISOString()
+      };
+      const blob = new Blob([JSON.stringify(pacote, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `wg-mundo-ninja-ano${anoAtualJogo}-save.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('💾 Arquivo de Save baixado com sucesso!');
+    }
+
+    function importarSaveJogo(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const dados = JSON.parse(e.target.result);
+          if (dados.vilas) {
+            Object.assign(dadosVilas, dados.vilas);
+            if (dados.ano) anoAtualJogo = dados.ano;
+            salvarEstadoCompletoNoStorage();
+            atualizarPainelVila(vilaAtual);
+            showToast(`📂 Save do Ano ${anoAtualJogo} carregado com sucesso!`);
+          }
+        } catch(err) {
+          showToast('❌ Erro ao ler o arquivo de save.');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // Carregar save automático ao abrir
+    carregarEstadoDoStorage();
+
+    // Inicialização
+    document.addEventListener('DOMContentLoaded', () => {
+      atualizarPainelVila('folha');
+    });
+  </script>
+</body>
+</html>
